@@ -139,7 +139,7 @@ public final class MaceEvolution implements ModInitializer {
     }
     private static void applyLevelEnchantments(ServerPlayerEntity player, ItemStack stack, int level) {
         try {
-            RegistryWrapper.Impl<Enchantment> registry = player.getServer().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+            RegistryWrapper.Impl<Enchantment> registry = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
             ItemEnchantmentsComponent current = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
             ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(current);
             setEnchantment(builder, registry, "density", Math.min(5, 1 + (level - 1) / 4));
