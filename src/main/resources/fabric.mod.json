@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "maceevolution",
+  "version": "${version}",
+  "name": "Mace Evolution: Кара Світів",
+  "description": "A 20-level evolving mace for Minecraft 1.21.11.",
+  "authors": [
+    "Hard GG"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.hardgg.maceevolution.MaceEvolution"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "=1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
