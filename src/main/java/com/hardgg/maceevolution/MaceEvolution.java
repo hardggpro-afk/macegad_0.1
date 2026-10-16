@@ -61,6 +61,10 @@ public final class MaceEvolution implements ModInitializer {
                 ItemStack held = findMace(player);
                 if (held.isEmpty()) continue;
                 int lvl = level(held);
+                if (lvl >= 20 && !player.getAbilities().allowFlying) {
+                    player.getAbilities().allowFlying = true;
+                    player.sendAbilitiesUpdate();
+                }
                 int amp = Math.min(4, (lvl - 1) / 5);
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 45, amp, true, false, true));
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 45, Math.min(3, (lvl - 1) / 7), true, false, true));
