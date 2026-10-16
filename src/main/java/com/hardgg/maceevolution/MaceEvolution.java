@@ -101,7 +101,7 @@ public final class MaceEvolution implements ModInitializer {
         stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("§l§6" + NAMES[level - 1]));
         stack.set(DataComponentTypes.LORE, new net.minecraft.component.type.LoreComponent(java.util.List.of(
             Text.literal("§7Рівень: §e" + level + "§7/20"),
-            Text.literal("§7Убивств на цьому рівні: §c" + kills(stack) + "§7/" + (level == 20 ? "MAX" : REQUIRED_KILLS[level - 1]),
+            Text.literal("§7Убивств на цьому рівні: §c" + kills(stack) + "§7/" + (level == 20 ? "MAX" : REQUIRED_KILLS[level - 1])),
             Text.literal("§8Прогрес зберігається в самій булаві."))));
     }
     private static void applyFinalKillReward(ServerPlayerEntity killer, ServerPlayerEntity dead) {
