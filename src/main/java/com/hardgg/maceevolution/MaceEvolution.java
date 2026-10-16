@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -18,6 +18,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
@@ -29,8 +30,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 public final class MaceEvolution implements ModInitializer {
     public static final String MOD_ID = "maceevolution";
     public static final Identifier MACE_ID = Identifier.of(MOD_ID, "worldbreaker_mace");
-    public static final DataComponentType<Integer> LEVEL = Registry.register(Registries.DATA_COMPONENT_TYPE,
-            Identifier.of(MOD_ID, "level"), DataComponentType.<Integer>builder().codec(Codec.intRange(1, 20)).packetCodec(PacketCodecs.VAR_INT).build());
+    public static final ComponentType<Integer> LEVEL = Registry.register(Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MOD_ID, "level"), ComponentType.<Integer>builder().codec(Codec.intRange(1, 20)).packetCodec(PacketCodecs.VAR_INT).build());
     public static final DataComponentType<Integer> KILLS = Registry.register(Registries.DATA_COMPONENT_TYPE,
             Identifier.of(MOD_ID, "kills"), DataComponentType.<Integer>builder().codec(Codec.intRange(0, 999999)).packetCodec(PacketCodecs.VAR_INT).build());
     public static final Item WORLD_BREAKER = Registry.register(Registries.ITEM, MACE_ID,
@@ -80,7 +81,7 @@ public final class MaceEvolution implements ModInitializer {
             return ActionResult.PASS;
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("maceevolution")
-            .then(literal("give").requires(source -> source.hasPermissionLevel(2)).executes(context -> {
+            .then(literal("give").requires(CommandManager.requirePermissionLevel(CommandManager.ADMINS_CHECK)).executes(context -> {
                 ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
                 ItemStack stack = new ItemStack(WORLD_BREAKER);
                 updateName(stack);
