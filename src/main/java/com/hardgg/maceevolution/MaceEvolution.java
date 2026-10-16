@@ -6,6 +6,9 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -72,12 +75,31 @@ public final class MaceEvolution implements ModInitializer {
             ItemStack mace = attacker.getStackInHand(hand);
             if (!isMace(mace)) return ActionResult.PASS;
             int level = level(mace);
-            if (level >= 6) target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 50 + level * 3, Math.min(3, (level - 6) / 5)));
-            if (level >= 10) target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 80, Math.min(2, (level - 10) / 4)));
-            if (level >= 12) target.setOnFireFor(3 + level / 4);
-            if (level >= 14) target.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 60, 2));
-            if (level >= 16) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60, 1));
-            if (level >= 20) target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 100, 4));
+            if (level >= 2) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 50, 0));
+            if (level >= 3) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 60, 0));
+            if (level >= 5) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60, 0));
+            if (level >= 6) target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, Math.min(4, (level - 6) / 3)));
+            if (level >= 7) target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 100, Math.min(2, (level - 7) / 5)));
+            if (level >= 8) target.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 100, 0));
+            if (level >= 9) target.setOnFireFor(3 + level / 3);
+            if (level >= 10) target.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 35, 0));
+            if (level >= 11) target.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 12, 0));
+            if (level >= 12) {
+                target.setOnFireFor(6);
+                if (world instanceof ServerWorld serverWorld) for (int dx=-1; dx<=1; dx++) for (int dz=-1; dz<=1; dz++)
+                    serverWorld.spawnParticles(ParticleTypes.FLAME, target.getX()+dx, target.getY()+0.2, target.getZ()+dz, 10, 0.12, 0.35, 0.12, 0.01);
+            }
+            if (level >= 13 && world instanceof ServerWorld serverWorld) {
+                serverWorld.spawnParticles(ParticleTypes.ELECTRIC_SPARK, target.getX(), target.getY()+1, target.getZ(), 32, 0.8, 0.8, 0.8, 0.15);
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 70, 2)); target.setOnFireFor(4);
+            }
+            if (level >= 14) { target.setFrozenTicks(Math.max(target.getFrozenTicks(),240)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS,100,6)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE,100,2)); }
+            if (level >= 15) target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS,120,2));
+            if (level >= 16) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE,200,0));
+            if (level >= 17) target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER,100,1));
+            if (level >= 18) { attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION,200,2)); attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE,100,1)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS,80,0)); }
+            if (level >= 19 && world instanceof ServerWorld serverWorld) { serverWorld.spawnParticles(ParticleTypes.PORTAL,target.getX(),target.getY()+1,target.getZ(),60,0.8,1,0.8,0.4); target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER,160,2)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS,120,4)); }
+            if (level >= 20) { target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER,200,4)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS,200,4)); }
             return ActionResult.PASS;
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("maceevolution")
@@ -99,6 +121,8 @@ public final class MaceEvolution implements ModInitializer {
     private static boolean isMace(ItemStack stack) { return !stack.isEmpty() && stack.isOf(WORLD_BREAKER); }
     private static void updateName(ItemStack stack) {
         int level = level(stack);
+        stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(java.util.List.of((float) level), java.util.List.of(), java.util.List.of(), java.util.List.of()));
+        stack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, level >= 6);
         stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("§l§6" + NAMES[level - 1]));
         stack.set(DataComponentTypes.LORE, new net.minecraft.component.type.LoreComponent(java.util.List.of(
             Text.literal("§7Рівень: §e" + level + "§7/20"),

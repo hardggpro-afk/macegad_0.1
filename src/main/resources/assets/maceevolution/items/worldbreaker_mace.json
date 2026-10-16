@@ -1,6 +1,153 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "minecraft:item/mace"
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "entries": [
+      {
+        "threshold": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 15,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 16,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 17,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 18,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 19,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      },
+      {
+        "threshold": 20,
+        "model": {
+          "type": "minecraft:model",
+          "model": "maceevolution:item/worldbreaker_mace"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "maceevolution:item/worldbreaker_mace"
+    }
   }
 }
