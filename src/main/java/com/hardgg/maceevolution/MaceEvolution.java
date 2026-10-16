@@ -7,6 +7,12 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.entity.LivingEntity;
@@ -20,7 +26,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -50,6 +55,22 @@ public final class MaceEvolution implements ModInitializer {
     public static int kills(ItemStack stack) { return Math.max(0, stack.getOrDefault(KILLS, 0)); }
 
     @Override public void onInitialize() {
+        // Keep the holder's buffs active while the mace is in either hand.
+        ServerTickEvents.END_SERVER_TICK.register((MinecraftServer server) -> {
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                ItemStack held = findMace(player);
+                if (held.isEmpty()) continue;
+                int lvl = level(held);
+                int amp = Math.min(4, (lvl - 1) / 5);
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 45, amp, true, false, true));
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 45, Math.min(3, (lvl - 1) / 7), true, false, true));
+                if (lvl >= 4) player.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 45, Math.min(2, (lvl - 4) / 6), true, false, true));
+                if (lvl >= 7) player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 45, Math.min(2, (lvl - 7) / 6), true, false, true));
+                if (lvl >= 10) player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 45, Math.min(2, (lvl - 10) / 5), true, false, true));
+                if (lvl >= 15) player.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 45, 0, true, false, true));
+                applyLevelEnchantments(player, held, lvl);
+            }
+        });
         ServerLivingEntityEvents.AFTER_DEATH.register((LivingEntity victim, DamageSource source) -> {
             if (!(victim instanceof ServerPlayerEntity dead)) return;
             if (!(source.getAttacker() instanceof ServerPlayerEntity killer)) return;
@@ -75,6 +96,10 @@ public final class MaceEvolution implements ModInitializer {
             ItemStack mace = attacker.getStackInHand(hand);
             if (!isMace(mace)) return ActionResult.PASS;
             int level = level(mace);
+            // Refresh enchantments on the exact item stack used for the hit.
+            applyLevelEnchantments(attacker, mace, level);
+            attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 80, Math.min(4, (level - 1) / 5)));
+            attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 80, Math.min(3, (level - 1) / 7)));
             if (level >= 2) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 50, 0));
             if (level >= 3) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 60, 0));
             if (level >= 5) attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60, 0));
@@ -112,6 +137,35 @@ public final class MaceEvolution implements ModInitializer {
                 return 1;
             }))));
     }
+    private static void applyLevelEnchantments(ServerPlayerEntity player, ItemStack stack, int level) {
+        try {
+            RegistryWrapper.Impl<Enchantment> registry = player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+            ItemEnchantmentsComponent current = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+            ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(current);
+            setEnchantment(builder, registry, "density", Math.min(5, 1 + (level - 1) / 4));
+            setEnchantment(builder, registry, "breach", level >= 8 ? Math.min(4, 1 + (level - 8) / 4) : 0);
+            setEnchantment(builder, registry, "wind_burst", level >= 13 ? Math.min(3, 1 + (level - 13) / 3) : 0);
+            setEnchantment(builder, registry, "unbreaking", Math.min(3, 1 + (level - 1) / 7));
+            setEnchantment(builder, registry, "mending", level >= 6 ? 1 : 0);
+            setEnchantment(builder, registry, "fire_aspect", level >= 9 ? Math.min(2, 1 + (level - 9) / 6) : 0);
+            setEnchantment(builder, registry, "looting", level >= 11 ? Math.min(3, 1 + (level - 11) / 4) : 0);
+            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
+        } catch (RuntimeException ignored) {
+            // A missing optional enchantment must never crash a server.
+        }
+    }
+
+    private static void setEnchantment(ItemEnchantmentsComponent.Builder builder,
+            RegistryWrapper.Impl<Enchantment> registry, String id, int level) {
+        net.minecraft.registry.RegistryKey<Enchantment> key =
+            net.minecraft.registry.RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.ofVanilla(id));
+        java.util.Optional<net.minecraft.registry.entry.RegistryEntry.Reference<Enchantment>> entry = registry.getOptional(key);
+        if (entry.isPresent()) {
+            if (level > 0) builder.set(entry.get(), level);
+            else builder.remove(existing -> existing.matchesKey(key));
+        }
+    }
+
     private static ItemStack findMace(ServerPlayerEntity player) {
         ItemStack main = player.getMainHandStack();
         if (isMace(main)) return main;
