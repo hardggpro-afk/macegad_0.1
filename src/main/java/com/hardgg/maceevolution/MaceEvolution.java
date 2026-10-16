@@ -149,7 +149,8 @@ public final class MaceEvolution implements ModInitializer {
             setEnchantment(builder, registry, "mending", level >= 6 ? 1 : 0);
             setEnchantment(builder, registry, "fire_aspect", level >= 9 ? Math.min(2, 1 + (level - 9) / 6) : 0);
             setEnchantment(builder, registry, "looting", level >= 11 ? Math.min(3, 1 + (level - 11) / 4) : 0);
-            stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
+            ItemEnchantmentsComponent updated = builder.build();
+            if (!updated.equals(current)) stack.set(DataComponentTypes.ENCHANTMENTS, updated);
         } catch (RuntimeException ignored) {
             // A missing optional enchantment must never crash a server.
         }
